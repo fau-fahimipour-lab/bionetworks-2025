@@ -97,7 +97,7 @@ I can manually update the network by running this block of code a few times (try
 
 ```r
 ## Update once
-nodeStates = updateStates(A, nodeStates)
+nodeStates = updateStates(A, nodeStates, p = 0.1, r = 0.15)
 
 ## Plot the update
 plot(G, vertex.label = NA, vertex.size = 10, vertex.color = nodeStates,
@@ -112,21 +112,21 @@ So to simulate this model, I need to repeat this updating step many times. I can
 ## Let's repeat this simulation some number of
 ## times and extract meaningful summary statistics
 ## --------
-simulateOneNetwork = function(A, initialFractionInfected, simulationTime){
+simulateOneNetwork = function(A, initialFractionInfected, simulationTime, p, r){
   ## Let's assign a random state to each node to start
   nodeStates = runif(nrow(A))
   nodeStates = ifelse(nodeStates < initialFractionInfected, 1, 0)
   ## Update the states in time
   for(t in 1:simulationTime){
     ## Update once
-    nodeStates = updateStates(A, nodeStates)
+    nodeStates = updateStates(A, nodeStates, p, r)
   }
   fractionInfectedNodes = mean(nodeStates)
   fractionInfectedNodes
 }
 
 ## Test my function
-simulateOneNetwork(A, initialFractionInfected = 0.5, simulationTime = 10)
+simulateOneNetwork(A, initialFractionInfected = 0.5, simulationTime = 10, p = 0.1, r = 0.15)
 
 ## It works!
 ```
@@ -136,21 +136,22 @@ Now I need to wrap this all in a function that repeats many simulations.
 ```r
 ## First it is always good practice to allocate an empty
 ## array that you will fill in
-nSimulations = 15
+nSimulations = 10
 results = data.frame(
-  'initialFraction' = rep(seq(0.1, 0.9, length.out = nSimulations), 10),
-  'finalFraction'   = rep(NA))
+  'initialFraction'    = rep(seq(0.1, 0.9, length.out = nSimulations), 200),
+  'finalFraction'      = rep(NA))
 
 ## Fill in my results DF
 for(r in 1:nrow(results)){
-  results$finalFraction[r] = simulateOneNetwork(A, initialFractionInfected = results$initialFraction[r], simulationTime = 20)
+  oneSimulationResult           = simulateOneNetwork(A, initialFractionInfected = results$initialFraction[r], simulationTime = 30, p = 0.1, r = 0.15)
+  results$finalFraction[r]      = oneSimulationResult['fractionInfectedNodes']
 }
 
 ## Quick plot of results
 plot(finalFraction ~ initialFraction, data = results, cex = 0.5)
 
 ## This is nasty! Let's summarize the results as averages instead.
-## Note: you will need to install 2 other data science libraries for this bit
+## Summarize the results
 library(dplyr)
 library(magrittr)
 summaryResults = results %>%
@@ -158,6 +159,9 @@ summaryResults = results %>%
   summarise('meanFinalFraction' = mean(finalFraction)) %>%
   as.data.frame()
 
-## Plot the summary statistics
+## Better plotting
 plot(meanFinalFraction ~ initialFraction, data = summaryResults, cex = 2)
+
+## Maybe look at the distribution
+hist(results$finalFraction, xlab = "Final prop. infected")
 ```
