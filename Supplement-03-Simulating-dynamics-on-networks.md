@@ -165,3 +165,30 @@ plot(meanFinalFraction ~ initialFraction, data = summaryResults, cex = 2)
 ## Maybe look at the distribution
 hist(results$finalFraction, xlab = "Final prop. infected")
 ```
+
+**Note:** Instead of the last block, you may find this one works better for your Problem Set 03 assignment!
+
+```r
+## First it is always good practice to allocate an empty
+## array that you will fill in
+## NOTE: This might take a few minutes to run
+nSimulations = 500
+results = data.frame(
+  'initialFraction'    = rep(0.1, nSimulations),
+  'finalFraction'      = rep(NA)
+)
+
+## Set your p and r
+myP = 0.15
+myR = 0.45
+
+## Fill in my results DF
+for(r in 1:nrow(results)){
+  oneSimulationResult           = simulateOneNetwork(A, initialFractionInfected = results$initialFraction[r], simulationTime = 100, myP, myR)
+  results$finalFraction[r]      = oneSimulationResult
+}
+
+## Plot the distribution of final infection spread for all your simulations
+hist(results$finalFraction, breaks = 15, xlab = "Final prop. infected", ylab = "Count", main = NULL)
+abline(v = mean(results$finalFraction), col = 'darkred', lwd = 2, lty = 2)
+```
