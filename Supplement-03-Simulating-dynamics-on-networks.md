@@ -144,7 +144,7 @@ results = data.frame(
 ## Fill in my results DF
 for(r in 1:nrow(results)){
   oneSimulationResult           = simulateOneNetwork(A, initialFractionInfected = results$initialFraction[r], simulationTime = 30, p = 0.1, r = 0.15)
-  results$finalFraction[r]      = oneSimulationResult['fractionInfectedNodes']
+  results$finalFraction[r]      = oneSimulationResult
 }
 
 ## Quick plot of results
